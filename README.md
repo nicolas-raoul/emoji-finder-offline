@@ -4,9 +4,9 @@ This Android application helps you find relevant emojis based on keywords.
 
 ## Current Features
 
-*   **Keyword Input**: A text field at the top allows you to enter keywords. (Note: Keyword-based search functionality is not yet implemented).
-*   **Emoji Display**: A static list of emojis (🗓️, ⏳, 👩‍💻, 😵‍💫, 🤯) is displayed in a grid.
-*   **Copy to Clipboard**: Tapping on an emoji copies it to the clipboard and displays a "Copied to clipboard" notification.
+*   **Keyword-Based Emoji Search**: Enter keywords in the text field to dynamically search and generate relevant emojis.
+*   **Grid Display**: Found emojis are displayed in a responsive grid.
+*   **Copy to Clipboard**: Tapping on any emoji in the grid copies it directly to your clipboard, with a confirmation message.
 
 ## How to Build and Run
 
