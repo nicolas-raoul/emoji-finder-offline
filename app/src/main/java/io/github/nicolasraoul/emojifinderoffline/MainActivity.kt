@@ -4,21 +4,24 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
+import com.google.ai.edge.aicore.GenerativeAIException
+import com.google.ai.edge.aicore.GenerativeModel
+import com.google.ai.edge.aicore.generationConfig
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var emojiRecyclerView: RecyclerView
-    private lateinit var emojiAdapter: EmojiAdapter
-
-    // Static list of emojis for now
-    private val emojis = listOf("🗓️", "⏳", "👩‍💻", "😵‍💫", "🤯")
+    private var model: GenerativeModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,19 +35,38 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        emojiRecyclerView = findViewById(R.id.emoji_recycler_view)
-        emojiRecyclerView.layoutManager = GridLayoutManager(this, 5) // 5 columns in the grid
+        model =
+            GenerativeModel(
+                generationConfig {
+                    context = applicationContext
+                    temperature = 0.2f
+                    topK = 16
+                    maxOutputTokens = 256
+                }
+            )
 
-        emojiAdapter = EmojiAdapter(emojis) { emoji ->
-            copyToClipboard(emoji)
-            Snackbar.make(mainView, getString(R.string.copied_to_clipboard, emoji), Snackbar.LENGTH_SHORT).show()
+        val inputText = findViewById<EditText>(R.id.input_text)
+        val emojiDisplay = findViewById<TextView>(R.id.emoji_display)
+        val generateButton = findViewById<Button>(R.id.generate_button)
+
+        generateButton.setOnClickListener {
+            val text = inputText.text.toString()
+            if (text.isNotEmpty()) {
+                emojiDisplay.text = "" // Clear previous results
+                CoroutineScope(Dispatchers.Main).launch {
+                    try {
+                        model!!.generateContentStream("Output a dozen of emojis related to $text")
+                            .collect {
+                                emojiDisplay.append(it.text)
+                            }
+                    } catch (e: GenerativeAIException) {
+                        Log.e("EmojiSearch", "Error generating emojis", e)
+                        emojiDisplay.text = "Error generating emojis."
+                    }
+                }
+            } else {
+                emojiDisplay.text = "Please enter some text."
+            }
         }
-        emojiRecyclerView.adapter = emojiAdapter
-    }
-
-    private fun copyToClipboard(text: String) {
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("emoji", text)
-        clipboard.setPrimaryClip(clip)
     }
 }
