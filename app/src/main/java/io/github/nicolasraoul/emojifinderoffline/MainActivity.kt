@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
                 emojiDisplay.text = "" // Clear previous results
                 CoroutineScope(Dispatchers.Main).launch {
                     try {
-                        model!!.generateContentStream("Output a dozen of emojis related to $text")
+                        model!!.generateContentStream("Output a dozen of emojis related to \"$text\". Do not output anything else than emojis.")
                             .collect {
                                 emojiDisplay.append(it.text)
                             }
