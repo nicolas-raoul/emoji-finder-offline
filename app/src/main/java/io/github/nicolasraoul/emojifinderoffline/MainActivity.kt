@@ -25,6 +25,13 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
 
     private var model: GenerativeModel? = null
+    private lateinit var generateButton: Button
+    private lateinit var loadingIndicator: android.widget.ProgressBar
+
+    private fun resetUiState() {
+        generateButton.isEnabled = true
+        loadingIndicator.visibility = android.view.View.GONE
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,11 +57,14 @@ class MainActivity : AppCompatActivity() {
 
         val inputText = findViewById<EditText>(R.id.input_text)
         val emojiDisplay = findViewById<FlexboxLayout>(R.id.emoji_display_container)
-        val generateButton = findViewById<Button>(R.id.generate_button)
+        generateButton = findViewById(R.id.generate_button)
+        loadingIndicator = findViewById(R.id.loading_indicator)
 
         generateButton.setOnClickListener {
             val text = inputText.text.toString()
             if (text.isNotEmpty()) {
+                generateButton.isEnabled = false
+                loadingIndicator.visibility = android.view.View.VISIBLE
                 emojiDisplay.removeAllViews() // Clear previous results
                 CoroutineScope(Dispatchers.Main).launch {
                     val accumulatedUniqueEmojis = LinkedHashSet<String>() // Initialize set for unique emojis
@@ -103,11 +113,14 @@ class MainActivity : AppCompatActivity() {
                             setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
                         }
                         emojiDisplay.addView(errorTextView)
+                    } finally {
+                        resetUiState()
                     }
                 }
             } else {
                 emojiDisplay.removeAllViews()
                 Snackbar.make(mainView, "Please enter some text.", Snackbar.LENGTH_SHORT).show()
+                resetUiState()
             }
         }
     }
