@@ -67,41 +67,41 @@ class MainActivity : AppCompatActivity() {
                 loadingIndicator.visibility = android.view.View.VISIBLE
                 emojiDisplay.removeAllViews() // Clear previous results
                 CoroutineScope(Dispatchers.Main).launch {
-                    val accumulatedUniqueEmojis = LinkedHashSet<String>() // Initialize set for unique emojis
+                    val displayedEmojis = mutableSetOf<String>() // Keep track of displayed emojis
                     try {
                         model!!.generateContentStream("Output a dozen of emojis related to \"$text\". Do not output anything else than emojis.")
                             .collect { chunk ->
-                                val chunkText = chunk.text ?: "" // Corrected line
-                                val emojisFromChunkString = EmojiUtils.filterUniqueEmojis(chunkText)
+                                val chunkText = chunk.text ?: ""
+                                val emojisFromChunk = EmojiUtils.filterUniqueEmojis(chunkText)
 
                                 // Iterate through the string of emojis returned by filterUniqueEmojis
                                 var k = 0
-                                while (k < emojisFromChunkString.length) {
-                                    val codePoint = emojisFromChunkString.codePointAt(k)
+                                while (k < emojisFromChunk.length) {
+                                    val codePoint = emojisFromChunk.codePointAt(k)
                                     val charCount = Character.charCount(codePoint)
-                                    val singleEmoji = emojisFromChunkString.substring(k, k + charCount)
-                                    accumulatedUniqueEmojis.add(singleEmoji) // Add to set to ensure uniqueness
+                                    val singleEmoji = emojisFromChunk.substring(k, k + charCount)
+
+                                    if (!displayedEmojis.contains(singleEmoji)) {
+                                        displayedEmojis.add(singleEmoji)
+                                        val emojiTextView = TextView(this@MainActivity).apply {
+                                            text = singleEmoji
+                                            textSize = 48f // SP value
+                                            val paddingDp = 8
+                                            val paddingPx = (paddingDp * resources.displayMetrics.density).toInt()
+                                            setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
+                                            setOnClickListener {
+                                                val clickedEmoji = (it as TextView).text.toString()
+                                                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                                val clip = ClipData.newPlainText("Copied Emoji", clickedEmoji)
+                                                clipboard.setPrimaryClip(clip)
+                                                Snackbar.make(mainView, "Copied $clickedEmoji to clipboard", Snackbar.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                        emojiDisplay.addView(emojiTextView)
+                                    }
                                     k += charCount
                                 }
                             }
-                        // After collecting all chunks, add each unique emoji as a separate TextView
-                        accumulatedUniqueEmojis.forEach { emoji ->
-                            val emojiTextView = TextView(this@MainActivity).apply {
-                                this.text = emoji
-                                textSize = 48f // SP value
-                                val paddingDp = 8
-                                val paddingPx = (paddingDp * resources.displayMetrics.density).toInt()
-                                setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
-                                setOnClickListener {
-                                    val clickedEmoji = (it as TextView).text.toString()
-                                    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    val clip = ClipData.newPlainText("Copied Emoji", clickedEmoji)
-                                    clipboard.setPrimaryClip(clip)
-                                    Snackbar.make(mainView, "Copied $clickedEmoji to clipboard", Snackbar.LENGTH_SHORT).show()
-                                }
-                            }
-                            emojiDisplay.addView(emojiTextView)
-                        }
                     } catch (e: GenerativeAIException) {
                         Log.e("EmojiSearch", "Error generating emojis", e)
                         emojiDisplay.removeAllViews()
