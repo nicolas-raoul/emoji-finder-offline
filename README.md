@@ -2,6 +2,8 @@
 
 This Android application helps you find relevant emojis based on keywords.
 
+It works even if you have no Internet connection, allowing you to prepare messages when travelling for instance.
+
 ## Current Features
 
 *   **Keyword Input**: Enter text to find relevant emojis.
