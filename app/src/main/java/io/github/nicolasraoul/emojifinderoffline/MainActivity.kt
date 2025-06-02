@@ -1,5 +1,8 @@
 package io.github.nicolasraoul.emojifinderoffline
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -24,7 +27,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+
+        val mainView = findViewById<android.view.View>(R.id.main)
+        ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
@@ -50,7 +55,7 @@ class MainActivity : AppCompatActivity() {
                 emojiDisplay.text = "" // Clear previous results
                 CoroutineScope(Dispatchers.Main).launch {
                     try {
-                        model!!.generateContentStream("Output a dozen of emojis related to $text")
+                        model!!.generateContentStream("Output a dozen of emojis related to \"$text\". Do not output anything else than emojis.")
                             .collect {
                                 emojiDisplay.append(it.text)
                             }
