@@ -15,6 +15,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.ai.edge.aicore.GenerativeAIException
 import com.google.ai.edge.aicore.GenerativeModel
 import com.google.ai.edge.aicore.generationConfig
+import io.github.nicolasraoul.emojifinderoffline.util.EmojiUtils // Added import
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,11 +55,25 @@ class MainActivity : AppCompatActivity() {
             if (text.isNotEmpty()) {
                 emojiDisplay.text = "" // Clear previous results
                 CoroutineScope(Dispatchers.Main).launch {
+                    val accumulatedUniqueEmojis = LinkedHashSet<String>() // Initialize set for unique emojis
                     try {
                         model!!.generateContentStream("Output a dozen of emojis related to $text")
-                            .collect {
-                                emojiDisplay.append(it.text)
+                            .collect { chunk ->
+                                val chunkText = chunk.text
+                                val emojisFromChunkString = EmojiUtils.filterUniqueEmojis(chunkText)
+
+                                // Iterate through the string of emojis returned by filterUniqueEmojis
+                                var k = 0
+                                while (k < emojisFromChunkString.length) {
+                                    val codePoint = emojisFromChunkString.codePointAt(k)
+                                    val charCount = Character.charCount(codePoint)
+                                    val singleEmoji = emojisFromChunkString.substring(k, k + charCount)
+                                    accumulatedUniqueEmojis.add(singleEmoji) // Add to set to ensure uniqueness
+                                    k += charCount
+                                }
                             }
+                        // After collecting all chunks, update the TextView with unique emojis
+                        emojiDisplay.text = accumulatedUniqueEmojis.joinToString("")
                     } catch (e: GenerativeAIException) {
                         Log.e("EmojiSearch", "Error generating emojis", e)
                         emojiDisplay.text = "Error generating emojis."
