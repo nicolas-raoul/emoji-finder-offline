@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                     try {
                         model!!.generateContentStream("Output a dozen of emojis related to $text")
                             .collect { chunk ->
-                                val chunkText = chunk.text
+                                val chunkText = chunk.text ?: "" // Corrected line
                                 val emojisFromChunkString = EmojiUtils.filterUniqueEmojis(chunkText)
 
                                 // Iterate through the string of emojis returned by filterUniqueEmojis
