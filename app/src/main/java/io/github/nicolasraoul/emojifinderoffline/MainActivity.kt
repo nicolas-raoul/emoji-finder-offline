@@ -78,7 +78,7 @@ class MainActivity : AppCompatActivity() {
                         accumulatedUniqueEmojis.forEach { emoji ->
                             val emojiTextView = TextView(this@MainActivity).apply {
                                 this.text = emoji
-                                textSize = 96f // SP value
+                                textSize = 48f // SP value
                                 val paddingDp = 8
                                 val paddingPx = (paddingDp * resources.displayMetrics.density).toInt()
                                 setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
