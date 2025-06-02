@@ -3,6 +3,7 @@ package io.github.nicolasraoul.emojifinderoffline
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import com.google.android.material.snackbar.Snackbar
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -81,6 +82,16 @@ class MainActivity : AppCompatActivity() {
                 }
             } else {
                 emojiDisplay.text = "Please enter some text."
+            }
+        }
+
+        emojiDisplay.setOnClickListener {
+            val emojiText = emojiDisplay.text.toString()
+            if (emojiText.isNotEmpty() && emojiText != "Please enter some text." && emojiText != "Error generating emojis.") {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Copied Emoji", emojiText)
+                clipboard.setPrimaryClip(clip)
+                Snackbar.make(mainView, "Copied to clipboard", Snackbar.LENGTH_SHORT).show()
             }
         }
     }
